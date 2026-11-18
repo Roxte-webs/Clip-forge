@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#11131a">
+<title>ClipForge AI — Mobile Video Studio</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><span class="brandmark">✦</span><span>ClipForge <small>AI</small></span></div>
+  <div class="projectname" id="projectName">Untitled project</div>
+  <div class="topactions"><button id="saveBtn" class="ghost">Save</button><button id="exportBtn" class="primary">Export</button></div>
+</header>
+<nav class="tabs">
+  <button class="tab active" data-tab="edit">Editor</button><button class="tab" data-tab="ai">AI Studio</button><button class="tab" data-tab="audio">Audio</button><button class="tab" data-tab="text">Captions</button>
+</nav>
+<main>
+<section class="workspace">
+  <div class="previewbox">
+    <div class="preview-head"><span id="previewStatus">Preview</span><span id="ratioLabel">16:9</span></div>
+    <div class="previewstage" id="previewStage">
+      <canvas id="renderCanvas" width="1280" height="720"></canvas>
+      <div id="emptyPreview" class="empty"><div class="emptyicon">＋</div><b>Import your video</b><span>Choose a video to begin editing</span><button id="importBtn" class="primary">Import video</button></div>
+      <video id="video" playsinline></video>
+      <div id="captionPreview" class="captionPreview"></div>
+    </div>
+    <div class="transport">
+      <button id="playBtn" class="round">▶</button><span id="timeLabel">00:00 / 00:00</span>
+      <button id="fitBtn" class="ghost small">Fit</button>
+    </div>
+  </div>
+  <section class="toolpanel" id="editPanel">
+    <div class="sectiontitle">Quick tools</div>
+    <div class="toolgrid">
+      <button class="tool" id="trimTool"><span>✂</span>Trim</button>
+      <button class="tool" id="splitTool"><span>⫿</span>Split marker</button>
+      <button class="tool" id="speedTool"><span>↗</span>Speed</button>
+      <button class="tool" id="colorTool"><span>◐</span>Color</button>
+      <button class="tool" id="captionTool"><span>▤</span>Caption</button>
+      <button class="tool" id="zoomTool"><span>⌕</span>Zoom</button>
+    </div>
+    <div class="sectiontitle">Clip settings</div>
+    <div class="settings">
+      <label>Start <input type="range" id="startRange" min="0" max="100" value="0"><span id="startValue">0.0s</span></label>
+      <label>End <input type="range" id="endRange" min="0" max="100" value="100"><span id="endValue">—</span></label>
+      <label>Speed <select id="speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+      <label>Color look <select id="look"><option value="none">Original</option><option value="cinematic">Cinematic</option><option value="vibrant">Vibrant</option><option value="cool">Cool</option><option value="warm">Warm</option><option value="mono">Mono</option></select></label>
+      <label>Zoom <input type="range" id="zoom" min="100" max="160" value="100"><span id="zoomValue">100%</span></label>
+      <label>Canvas <select id="aspect"><option value="16:9">16:9 YouTube</option><option value="9:16">9:16 Shorts</option><option value="1:1">1:1 Square</option></select></label>
+    </div>
+  </section>
+  <section class="toolpanel hidden" id="aiPanel">
+    <div class="sectiontitle">AI Auto Edit <span class="pill">On-device tools</span></div>
+    <p class="muted">Choose a style. ClipForge applies a starter edit recipe and suggests pacing, captions, music cues and effects. This MVP uses local rules—not a cloud AI model.</p>
+    <label>Editing style<select id="styleSelect"><option value="gaming">Gaming Chaos</option><option value="cinematic">Cinematic</option><option value="funny">Funny Reaction</option><option value="hype">Hype Montage</option><option value="chill">Chill</option><option value="story">Storytelling</option></select></label>
+    <label>Video mood<select id="mood"><option>Energetic</option><option>Funny</option><option>Suspenseful</option><option>Calm</option><option>Dramatic</option></select></label>
+    <label>Target length (seconds)<input id="targetLength" type="number" min="5" value="45"></label>
+    <label>Instructions<textarea id="instructions" placeholder="e.g. Fast cuts, Hinglish captions, zoom on reactions, avoid too many effects"></textarea></label>
+    <button class="primary full" id="autoEditBtn">✨ Generate edit plan</button>
+    <div id="aiResult" class="result"></div>
+    <button class="secondary full" id="applyPlanBtn" disabled>Apply style to preview</button>
+    <div class="sectiontitle">Script helper</div>
+    <label>Game / topic<input id="topic" placeholder="Minecraft clutch, Roblox funny moments…"></label>
+    <label>Video format<select id="scriptFormat"><option>Short</option><option>YouTube video</option><option>Commentary</option></select></label>
+    <button class="secondary full" id="scriptBtn">Generate starter script</button>
+    <textarea id="scriptOutput" class="scriptout" placeholder="Your script appears here…"></textarea>
+  </section>
+  <section class="toolpanel hidden" id="audioPanel">
+    <div class="sectiontitle">Audio studio</div>
+    <label>Background music <input type="file" id="musicFile" accept="audio/*"></label>
+    <div class="audioControls"><button id="musicPlay" class="secondary">Play music</button><button id="musicRemove" class="ghost">Remove</button></div>
+    <label>Music volume <input type="range" id="musicVolume" min="0" max="100" value="20"><span id="musicVolValue">20%</span></label>
+    <label>Original audio <input type="range" id="originalVolume" min="0" max="100" value="100"><span id="originalVolValue">100%</span></label>
+    <div class="sectiontitle">Audio cleanup</div>
+    <div class="toolgrid">
+      <button class="tool" id="noiseBtn"><span>◉</span>Noise filter</button>
+      <button class="tool" id="normalizeBtn"><span>↗</span>Normalize</button>
+      <button class="tool" id="duckBtn"><span>♫</span>Ducking</button>
+      <button class="tool" id="voiceBtn"><span>♙</span>Voice FX</button>
+    </div>
+    <p class="muted" id="audioNote">Audio controls are preview-oriented. Advanced AI denoising and voice cloning require additional models and compute.</p>
+  </section>
+  <section class="toolpanel hidden" id="textPanel">
+    <div class="sectiontitle">Captions & text</div>
+    <label>Caption text<textarea id="captionText" placeholder="Type your caption…"></textarea></label>
+    <label>Style<select id="captionStyle"><option value="bold">Gaming bold</option><option value="minimal">Minimal</option><option value="karaoke">Karaoke</option><option value="comic">Comic</option></select></label>
+    <label>Position<select id="captionPosition"><option value="bottom">Bottom</option><option value="middle">Middle</option><option value="top">Top</option></select></label>
+    <button class="primary full" id="addCaption">Add caption to preview</button>
+    <button class="secondary full" id="clearCaption">Clear caption</button>
+    <div class="sectiontitle">Speech-to-text</div>
+    <p class="muted">Speech recognition is available only in browsers that support Web Speech API and may require microphone permission. This is live dictation, not transcription of imported footage.</p>
+    <button class="secondary full" id="speechBtn">🎙 Start dictation</button>
+    <div id="speechResult" class="result"></div>
+  </section>
+</section>
+<section class="timelineSection">
+  <div class="timelineHeader"><b>Timeline</b><span id="durationInfo">No media</span><div><button class="ghost small" id="addTrack">＋ Track</button><button class="ghost small" id="clearProject">Clear</button></div></div>
+  <div class="timeline" id="timeline">
+    <div class="timelineEmpty" id="timelineEmpty">Import a clip to see it on your timeline</div>
+    <div class="clipTrack" id="clipTrack"><div class="clipLabel">VIDEO</div><div class="clipBlock" id="clipBlock"><span id="clipTitle">Video clip</span><div class="cutMarkers" id="cutMarkers"></div></div></div>
+    <div class="audioTrack"><div class="clipLabel">AUDIO</div><div class="audioBlock" id="audioBlock">Music track</div></div>
+    <div class="captionTrack"><div class="clipLabel">TEXT</div><div class="captionBlock" id="captionBlock">Caption overlay</div></div>
+  </div>
+  <div class="timelineActions"><button id="markCut" class="secondary">＋ Add cut marker</button><button id="removeCuts" class="ghost">Clear markers</button><span id="markerCount">0 markers</span></div>
+</section>
+</main>
+<footer><span>ClipForge MVP · Local-first</span><span id="status">Ready</span></footer>
+<input type="file" id="videoFile" accept="video/*" hidden>
+<input type="file" id="projectFile" accept=".json" hidden>
+<audio id="music" loop></audio>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
